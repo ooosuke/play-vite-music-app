@@ -1,85 +1,20 @@
-import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Pause, Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
 import { Slider } from "./components/ui/slider";
-
-type Song = {
-  title: string;
-  artist: string;
-  coverUrl: string;
-  musicUrl: string;
-};
-
-const songs: Song[] = [
-  {
-    title: "シャイニングスター",
-    artist: "詩歩",
-    coverUrl: "public/shining_star.jpg",
-    musicUrl: "shining_star.mp3",
-  },
-  {
-    title: "Burning Heart",
-    artist: "KEI",
-    coverUrl: "public/burning_heart.jpg",
-    musicUrl: "burning_heart.mp3",
-  },
-  {
-    title: "12345",
-    artist: "Mary",
-    coverUrl: "public/12345.jpg",
-    musicUrl: "12345.mp3",
-  },
-  {
-    title: "ハルジオン",
-    artist: "KEI",
-    coverUrl: "public/halzion.jpg",
-    musicUrl: "halzion.mp3",
-  },
-  {
-    title: "Bipolar Disorder Outside ver.",
-    artist: "森田交一",
-    coverUrl: "public/outside.jpg",
-    musicUrl: "outside.mp3",
-  },
-];
+import { usePayler } from "./lib/usePlayer";
 
 function App() {
-  const [currentSongIndex, setCurrentSongIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(50);
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const currentSong = songs[currentSongIndex];
-
-  const handlePrevious = () => {
-    setCurrentSongIndex(
-      (prevIndex) => (prevIndex - 1 + songs.length) % songs.length
-    );
-    setIsPlaying(false);
-  };
-
-  const handleNext = () => {
-    setCurrentSongIndex((prevIndex) => (prevIndex + 1) % songs.length);
-    setIsPlaying(false);
-  };
-
-  const togglePlayPause = () => {
-    if (!audioRef.current) return;
-
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleVolumeChange = (value: number[]) => {
-    setVolume(value[0]);
-    if (audioRef.current) {
-      audioRef.current.volume = value[0] / 100;
-    }
-  };
+  const {
+    onChangeVolume,
+    onNext,
+    onPrevious,
+    onTogglePause,
+    currentSong,
+    volume,
+    isPlaying,
+    audioRef,
+  } = usePayler();
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-900 to-gray-900">
@@ -102,7 +37,7 @@ function App() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={handlePrevious}
+              onClick={onPrevious}
               className="text-white hover:text-gray-300 transition-colors"
             >
               <SkipBack className="h-6 w-6" />
@@ -110,7 +45,7 @@ function App() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={togglePlayPause}
+              onClick={onTogglePause}
               className="text-white hover:text-gray-300 transition-colors"
             >
               {isPlaying ? (
@@ -122,7 +57,7 @@ function App() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={handleNext}
+              onClick={onNext}
               className="text-white hover:text-gray-300 transition-colors"
             >
               <SkipForward className="h-6 w-6" />
@@ -135,14 +70,10 @@ function App() {
               max={100}
               step={1}
               className="w-full"
-              onValueChange={handleVolumeChange}
+              onValueChange={onChangeVolume}
             />
           </div>
-          <audio
-            ref={audioRef}
-            src={currentSong.musicUrl}
-            onEnded={handleNext}
-          />
+          <audio ref={audioRef} src={currentSong.musicUrl} onEnded={onNext} />
         </CardContent>
       </Card>
     </div>
